@@ -1,0 +1,14 @@
+# Core dependencies (required for --mode analyze on any machine)
+opencv-python>=4.5
+numpy>=1.21
+
+# Required for the GUI (tracker_gui.py)
+pygame>=2.1
+
+# Optional: only needed if you want the auto-generated summary plot
+# (--mode analyze fails soft and skips the plot if this isn't installed)
+matplotlib>=3.4
+
+# Optional: only needed on a Raspberry Pi for --mode record / record-analyze / live / still
+# (not installable/usable on a non-Pi machine -- do not install this on a dev laptop)
+# picamera2

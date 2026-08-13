@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=C. elegans Tracker
+Comment=Launch the worm tracker GUI
+Exec=bash -c "cd \"$(dirname \"%k\")\" && python3 tracker_gui.py"
+Icon=utilities-terminal
+Terminal=false
+Categories=Science;
