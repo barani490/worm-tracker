@@ -64,12 +64,30 @@ Known limits:
 - `cumulative_distance_px` counts all pixel movement, including moves you make by sliding or repositioning the plate.
 - Earlier development was validated on 7 recorded clips (details in [CHANGELOG.md](CHANGELOG.md)); those clips are not included in this repo.
 
-## How it works
+## What it can do
 
-- Per-pixel outlier-rejecting background model that adapts slowly and heals over spots the worm has left
-- Per-frame Otsu thresholding, so no manual tuning across contrast levels
-- Kalman-filtered, intensity-weighted centroid
-- Fresh-lock gating so a new lock requires worm-like shape and contrast (dust rejection)
+**Tracking that holds up in messy real footage**
+- Per-pixel, outlier-rejecting background model. In `analyze` mode it is built from frames spread across the whole file, so a worm that sits still isn't absorbed into the background. A foreground-protection step keeps a resting worm from being erased, and the patch the worm just left is actively "healed" so ghosts don't get tracked.
+- Hysteresis (Canny-style) thresholding with a per-frame noise floor (MAD) plus Otsu. Faint head and tail tips stay in the contour, and thresholds self-calibrate to each recording's contrast, so there is no manual tuning across setups.
+- Fresh-lock gating: a new lock needs worm-like elongation and enough local contrast, measured directly on the raw frame. This rejects dust, stains and static artifacts.
+- Warmup detection skips the camera's auto-exposure / white-balance settling, so the startup brightness flicker doesn't poison the background.
+- A constant-velocity Kalman filter smooths the intensity-weighted centroid, predicts where to look next, and coasts through brief dropouts. Implausible per-frame jumps are rejected.
+- During a live run, a warning prints if detection collapses to about 0% (empty dish, worm out of focus), so you can check the setup right then instead of after the run.
+
+**Capture and recording on a Raspberry Pi**
+- `live` mode tracks from a separate low-resolution stream while the hardware H.264 encoder records the full-quality video, so tracking load doesn't touch recording quality. `--target-fps` leaves CPU headroom for other work.
+- `still` mode captures annotated full-resolution stills (up to 12.3 MP) at a fixed interval, for long, low-magnification experiments.
+- Clear failure handling: the resolution is checked against the Pi 4's encoder limit before recording starts, camera acquisition retries when the camera is still busy, `--camera-selftest` probes the camera, and video opening falls back to a GStreamer pipeline on Pi OpenCV builds that need it.
+
+**Measurements and output**
+- Per-frame CSV: position, area, circularity, detected flag and cumulative distance, with optional mm columns.
+- Circularity per frame, for flagging omega turns and coiling.
+- Trajectory and position-vs-time plots, plus an annotated preview video or overlay for checking the tracking by eye.
+
+**Tooling**
+- One shared tracker (`SingleWormTracker`) for live and offline, so the same logic runs in both. That is what makes the live-vs-offline comparison below meaningful.
+- `--profile` and `--profile-csv` give per-stage timings. Other options: ROI crop, auto-mask for the microscope vignette, frame skip, downscale, CLAHE, and a webcam or camera index as input.
+- A GUI for every mode, with a live console and an inline plot preview, plus Windows and Pi launchers.
 
 ## Hardware used
 
