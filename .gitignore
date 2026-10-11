@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+# run outputs
+stills/
+*.h264
+*.mp4

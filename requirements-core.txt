@@ -1,0 +1,10 @@
+# Tracker only (no GUI) -- enough for celegans_tracker.py on any machine.
+opencv-python>=4.5
+numpy>=1.21
+
+# Optional: only needed for the auto-generated summary plot (--output-plot)
+matplotlib>=3.4
+
+# Optional: only on a Raspberry Pi, for --mode record / record-analyze / live / still.
+# Comes preinstalled on Raspberry Pi OS; do not pip-install it on a laptop.
+# picamera2

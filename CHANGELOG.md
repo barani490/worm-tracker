@@ -2,6 +2,21 @@
 
 Debugging history for `celegans_tracker.py`, kept verbatim from development.
 
+## Hardware testing round (July 2026)
+
+Fixes found while testing on a Pi 4 and Pi 5 with the HQ Camera. Each was checked on hardware.
+
+1. **Live-mode `time_s` drifted from the real clock.** It was computed as `frame_idx / assumed_fps`, which only holds if the capture loop hits the nominal fps every frame. Now uses wall-clock time (`--mode still` had the same assumption and got the same fix). Verified against a phone timer at 30 s, 120 s and in a live + record run.
+2. **Live CSV offset from the recorded video (~8.6 s).** `start_recording()` ran before the background-model warmup, but the CSV clock (`t_start`) was only set after it. Found by re-analyzing a recorded live session offline and comparing the two CSVs; the gap persisted on a clean single-worm run. `t_start` now anchors to when recording starts. Re-verified: live and offline end within 0.7 s. Consequence: the first live CSV row appears after warmup (~9.5 s in testing).
+3. **`--mode still` crashed at startup.** A variable named `picamera2` shadowed the module, and `_make_picamera2` was passed a class where it expects a resolution. Fixed.
+4. **`--mode still` crashed writing the CSV after a successful run.** Internal `_raw_cx`/`_raw_cy` keys were excluded from the column list but still present in each row, so `csv.DictWriter` raised `ValueError`. Fixed with `extrasaction="ignore"`; covered by `tests/test_basics.py`.
+5. **Added `circularity` column** (4π·A/P², per Chen et al. 2021), computed from the tracked contour.
+6. **Performance characterization.** Analyze speed is data-dependent (a large or ambiguous foreground costs more per frame). Same clip, same code: Pi 4 ≈ 7.4 fps, Pi 5 ≈ 18.4 fps, identical output.
+7. **Repo cleanup.** Three identical copies of the tracker were consolidated into one; stale "hardware-untested" notes were removed.
+
+Entries below are the earlier debugging log, kept as written.
+
+
 ERRORS FOUND DURING PI 4 TEST DAY + FIXES (keeping this log, don't delete):
  1) python3 celegans_tracker.py --mode record --record-output test10.mp4 --duration 10
     -> ProcessLookupError inside picamera2's V4L2 h264 encoder (ioctl VIDIOC_STREAMON).

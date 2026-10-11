@@ -1487,7 +1487,8 @@ def _save_plot(csv_rows, path, mm_per_px):
 
 # ============================================================
 # Pi camera support (record / record-analyze / live)
-# HARDWARE-UNTESTED -- see module docstring.
+# Tested on real hardware (Raspberry Pi 4 and Pi 5 with the HQ Camera).
+# See README.md > "What has been validated" for what was and wasn't checked.
 # ============================================================
 def _import_picamera2():
     try:
