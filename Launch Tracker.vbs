@@ -21,5 +21,14 @@ If exitCode <> 0 Then
     WScript.Quit
 End If
 
-' pythonw = same as python, but with no console window at all
-shell.Run "pythonw tracker_gui.py", 0, False
+' Run the GUI with plain `python` (the same interpreter run_gui.bat uses) in a
+' hidden window. We used to call `pythonw` here, which on some installs
+' (Microsoft Store Python, multiple Pythons) isn't the same Python as `python`
+' and fails with no message at all. Waiting for it to exit lets us tell you if
+' it failed to start, instead of silently doing nothing.
+exitCode = shell.Run("cmd /c python tracker_gui.py", 0, True)
+If exitCode <> 0 Then
+    MsgBox "The tracker GUI closed with an error (code " & exitCode & ")." & vbCrLf & vbCrLf & _
+           "Double-click run_gui.bat in this folder to see the full error message.", _
+           vbExclamation, "C. elegans Tracker"
+End If
